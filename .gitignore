@@ -1,0 +1,27 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Environments
+.venv/
+.env
+
+# Editors
+.vscode/
+.idea/
+
+# Data artifacts
+artifacts/
+*.zip
+*.tif
+*.tiff
+*.pkl
+*.h5
+*.ckpt
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS cruft
+.DS_Store
+Thumbs.db

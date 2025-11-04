@@ -1,0 +1,6 @@
+name: cse488-cell-tracking
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - -e .
