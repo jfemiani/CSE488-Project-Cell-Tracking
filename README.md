@@ -65,7 +65,7 @@ Key environment variables:
 
 1. Fork the repo (keep private) and invite Heather Shelton, Femian John Charles, and Siddhant Nene.
 2. Use issues/projects to plan segmentation/tracking experiments.
-3. Extend `scripts/` and `src/cell_tracking/` with custom methods (CNNs, trackers, etc.).
+3. Extend `scripts/` and `src/cell_tracking/` with custom methods (CNNs, trackers, etc.). For deep baselines, start with lightweight U-Nets from `segmentation_models_pytorch` (e.g., MobileNet or EfficientNet encoders) to keep training feasible.
 4. Publish qualitative results and videos via GitHub Pages (or similar) linked from your README.
 
 ## GitHub Pages / Showcase Site
