@@ -68,6 +68,17 @@ Key environment variables:
 3. Extend `scripts/` and `src/cell_tracking/` with custom methods (CNNs, trackers, etc.).
 4. Publish qualitative results and videos via GitHub Pages (or similar) linked from your README.
 
+## GitHub Pages / Showcase Site
+
+Every team must host a lightweight public page that summarizes results and embeds demo videos. This repo includes a template at `docs/index.md`; GitHub Pages can publish anything under `docs/` straight from the `main` branch.
+
+1. Edit `docs/index.md` with your team name, updated badge link (point it at your fork), metrics tables, and embedded media (place assets under `docs/assets/`).
+2. Push the changes to `main`.
+3. In your fork’s GitHub settings, open **Pages → Build and deployment**, choose **Deploy from branch**, select `main` and `/docs`, and click **Save**. GitHub will provision `https://<username>.github.io/<repo>/`.
+4. Add that URL to your Canvas submission and the repo README.
+
+Tip: run `python -m http.server 8000` from the repo root and visit `http://localhost:8000/docs/` to preview changes before pushing.
+
 ## License
 
 MIT License – adjust to match your team preference if needed.
