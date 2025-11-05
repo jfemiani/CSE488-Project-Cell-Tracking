@@ -9,7 +9,7 @@ This repository replaces the shared Colab notebook with a reproducible Python pr
 ## Using This Template
 
 1. On GitHub, click **Use this template → Create a new repository**. Keep the repo private and name it `<team>-cell-tracking` (or similar).
-2. Add the instructors (Heather Shelton, Femian John Charles, Siddhant Nene) as collaborators so they can clone and grade your work.
+2. Add the instructors (John Femiani – `jfemiani` / `john.femiani@miamioh.edu`, Heather Merhout – `merhouhs@miamioh.edu`, Siddhant Karki – `karkis@miamioh.edu`) as collaborators so they can clone and grade your work.
 3. Clone your newly created repo locally, then follow the quickstart below to set up the environment.
 4. Customize the showcase page under `docs/index.md` (team name, metrics, media). Keep large artifacts under `docs/assets/`.
 5. Update the README in your fork with experiment notes, checkpoints, and the Cloudflare Pages URL you will publish.
@@ -71,7 +71,7 @@ Key environment variables:
 
 ## Next Steps for Students
 
-1. Fork the repo (keep private) and invite Heather Shelton, Femian John Charles, and Siddhant Nene.
+1. Fork the repo (keep private) and invite John Femiani, Heather Merhout, and Siddhant Karki.
 2. Use issues/projects to plan segmentation/tracking experiments.
 3. Extend `scripts/` and `src/cell_tracking/` with custom methods (CNNs, trackers, etc.). For deep baselines, start with lightweight U-Nets from `segmentation_models_pytorch` (e.g., MobileNet or EfficientNet encoders) to keep training feasible.
 4. Publish qualitative results and videos via GitHub Pages (or similar) linked from your README.
