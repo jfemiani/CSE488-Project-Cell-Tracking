@@ -9,7 +9,7 @@ This repository replaces the shared Colab notebook with a reproducible Python pr
 ## Using This Template
 
 1. On GitHub, click **Use this template → Create a new repository**. Keep the repo private and name it `<team>-cell-tracking` (or similar).
-2. Add the instructors (John Femiani – `jfemiani` / `john.femiani@miamioh.edu`, Heather Merhout – `merhouhs@miamioh.edu`, Siddhant Karki – `karkis@miamioh.edu`) as collaborators so they can clone and grade your work.
+2. Add the instructor and TAs (John Femiani, Heather Merhout, Siddhant Karki) as collaborators so they can clone and grade your work.
 3. Clone your newly created repo locally, then follow the quickstart below to set up the environment.
 4. Customize the showcase page under `docs/index.md` (team name, metrics, media). Keep large artifacts under `docs/assets/`.
 5. Update the README in your fork with experiment notes, checkpoints, and the Cloudflare Pages URL you will publish.
