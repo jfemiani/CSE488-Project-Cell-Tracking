@@ -19,6 +19,10 @@ artifacts/
 *.h5
 *.ckpt
 
+# Hydra configuration stores
+outputs/
+multirun/
+
 # Notebooks checkpoints
 .ipynb_checkpoints/
 

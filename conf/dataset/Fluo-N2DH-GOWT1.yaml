@@ -1,0 +1,6 @@
+# @package _global_
+dataset:
+  name: Fluo-N2DH-GOWT1
+  splits:
+    - training
+    - test

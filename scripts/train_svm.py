@@ -2,45 +2,36 @@
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 
-from cell_tracking.config import artifacts_path
+import hydra
+from omegaconf import DictConfig
+
 from cell_tracking.features import ImageMaskPair, process_images
+from cell_tracking.config import artifacts_path
 from cell_tracking.models import svm as svm_module
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Train sliding-window SVM")
-    parser.add_argument("dataset", help="Dataset name (e.g., Fluo-N2DH-GOWT1)")
-    parser.add_argument("--track", default="01", help="Track identifier (01/02)")
-    parser.add_argument("--window", type=int, default=5, help="Sliding window size")
-    parser.add_argument("--samples", type=int, default=500, help="Samples per image")
-    parser.add_argument("--pct-fg", type=float, default=0.5, help="Foreground sampling ratio")
-    parser.add_argument("--kernel", default="rbf", help="SVM kernel")
-    parser.add_argument(
-        "--model-path",
-        type=Path,
-        default=artifacts_path("models", "svm.pkl"),
-        help="Output pickle destination",
-    )
-    args = parser.parse_args()
+@hydra.main(config_path="../conf", config_name="config", version_base=None)  # type: ignore[misc]
+def main(cfg: DictConfig) -> None:
+    dataset_root = artifacts_path("datasets", cfg.dataset.name, "training")
+    model_path = Path(cfg.model.path)
 
-    dataset_root = artifacts_path("datasets", args.dataset, "training")
     pairs = [
         ImageMaskPair(
-            dataset_root / args.track / f"t{i:03d}.tif",
-            dataset_root / f"{args.track}_ST" / "SEG" / f"man_seg{i:03d}.tif",
+            dataset_root / cfg.train.track / f"t{i:03d}.tif",
+            dataset_root / f"{cfg.train.track}_ST" / "SEG" / f"man_seg{i:03d}.tif",
         )
         for i in range(3)
     ]
-    df = process_images(pairs, args.window, args.samples, args.pct_fg)
-    x = df.drop(columns=["label", "image"]).values
-    y = df["label"].values
 
-    model = svm_module.train_svm(x, y, kernel=args.kernel)
-    svm_module.save_model(model, args.model_path)
-    print(f"Saved model to {args.model_path}")
+    df = process_images(pairs, cfg.train.window, cfg.train.samples, cfg.train.pct_fg)
+    x = df.drop(columns=["label", "image"]).values
+    y = df["label"].to_numpy()
+
+    model = svm_module.train_svm(x, y, kernel=cfg.model.kernel)
+    svm_module.save_model(model, model_path)
+    print(f"Saved model to {model_path}")
 
 
 if __name__ == "__main__":

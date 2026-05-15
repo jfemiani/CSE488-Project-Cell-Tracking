@@ -1,0 +1,6 @@
+# @package _global_
+train:
+  track: "01"
+  window: 5
+  samples: 500
+  pct_fg: 0.5

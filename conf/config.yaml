@@ -1,0 +1,6 @@
+defaults:
+  - dataset: Fluo-N2DH-GOWT1
+  - model: svm_rbf
+  - train: default
+  - eval: default
+  - _self_

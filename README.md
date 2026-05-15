@@ -1,93 +1,139 @@
 # CSE488 Project – Cell Segmentation & Tracking Starter
+A reproducible Python starter repository for the Cell Tracking Challenge inspired assignment.
+Students clone this repo, keep it private, and add the instructional staff as collaborators.
 
-This repository replaces the shared Colab notebook with a reproducible Python project for the Cell Tracking Challenge inspired assignment. Use it as a GitHub **template repository** so every team starts from the same baseline while keeping their fork private and shared only with the instructional staff. Major goals:
+**Goals:**
+- Provide scripts for downloading challenge data, evaluation tools, and helper assets.
+- Offer reusable modules for feature extraction, classical ML baselines, and evaluation (IoU + SEGMeasure).
+- Encourage clean, version-controlled experiments rather than ad-hoc notebook sessions.
 
-- Provide scripts for downloading challenge data, evaluation tooling, and helper assets.
-- Offer reusable modules for feature extraction, classical ML (SVM baseline), and evaluation (IoU + SEGMeasure wrapper).
-- Encourage clean experiments tracked via version control instead of ad-hoc Colab sessions.
+## Getting Started
 
-## Using This Template
+### 1. Use this template
+On GitHub, click **Use this template → Create a new repository**.
+- Keep the repo **private**.
+- Name it something like `<yourname>-cell-tracking`.
+- Add John Femiani and other TAs as collaborators so they can clone and grade your work.
 
-1. On GitHub, click **Use this template → Create a new repository**. Keep the repo private and name it `<team>-cell-tracking` (or similar).
-2. Add the instructor and TAs (John Femiani, Heather Merhout, Siddhant Karki) as collaborators so they can clone and grade your work.
-3. Clone your newly created repo locally, then follow the quickstart below to set up the environment.
-4. Customize the showcase page under `docs/index.md` (team name, metrics, media). Keep large artifacts under `docs/assets/`.
-5. Update the README in your fork with experiment notes, checkpoints, and the Cloudflare Pages URL you will publish.
+### 2. Set up your environment
+```bash
+conda env create -f environment.yml
+conda activate cse488-cell-tracking
+pip install -e .
+```
+
+### 3. Enable GitHub Copilot (recommended)
+This repo includes a `.github/copilot-instructions.md` file that gives Copilot context about the project structure, conventions, and what you are expected to implement. If you have access to GitHub Copilot, it will automatically use these instructions to give you more relevant suggestions as you work.
+
+### 4. Download the data and evaluation tools
+```bash
+python scripts/setup_data.py
+```
+This downloads the dataset into `artifacts/`. By default it fetches both the `training` and `test` splits of `Fluo-N2DH-GOWT1`. To override:
+```bash
+python scripts/setup_data.py dataset.splits=[training]
+```
+
+### 5. Train the SVM baseline
+To test out what you will be doing for the project, some demo code has been provided to you for a SVM model. However:
+- `train_svm.py` only trains on 3 frames
+- `eval_seg.py` only generates predictions for 1 frame
+- The Jaccard evaluator in `evaluation.py` will silently skip any frame without a corresponding mask, so your score will look great but be meaningless if you haven't generated masks for all evalutation frames/
+
+It is your job to expand upon this code for your project to train on all training frames, generate predictions for every evaluation frame, and produce a meaningful evaluation score across the full dataset. A submission that only evaluates one frame will not be accepted.
+
+To run the training script (feel free to run before modifying to get a feel for what you're doing):
+```bash
+python scripts/train_svm.py
+```
+You can override any config value on the command line without editing any files:
+```bash
+# Change the SVM kernel
+python scripts/train_svm.py model=svm_linear
+
+# Change window size and sample count
+python scripts/train_svm.py train.window=7 train.samples=1000
+
+# Try multiple kernels in one go (multirun)
+python scripts/train_svm.py -m model=svm_rbf,svm_linear
+```
+### 6. Evaluate
+Again, it is your job to expand on `eval_seg.py` in order to evaluate across all your evaluation frames.
+
+To run the evaluation script:
+```bash
+python scripts/eval_seg.py
+```
+Override options work the same way:
+```bash
+# Evaluate with a specific model
+python scripts/eval_seg.py model=svm_linear
+
+# Evaluate track 02 with verbose output
+python scripts/eval_seg.py eval.track=02 eval.verbose=true
+```
+
+### 7. Understanding the config system (Hydra)
+This project uses [Hydra](https://hydra.cc) for configuration management. All default settings live in the `conf/` folder:
+```
+conf/
+  config.yaml          <- top-level defaults (which dataset/model/train/eval to use)
+  dataset/
+    Fluo-N2DH-GOWT1.yaml   <- dataset name and splits
+  model/
+    svm_rbf.yaml       <- RBF kernel SVM settings
+    svm_linear.yaml    <- linear kernel SVM settings
+  train/
+    default.yaml       <- window size, samples, foreground ratio
+  eval/
+    default.yaml       <- track, window size, verbosity
+```
+To experiment with a new model configuration, create a new file in `conf/model/` (e.g. `conf/model/svm_poly.yaml`) and run:
+```bash
+python scripts/train_svm.py model=svm_poly
+```
+Every run automatically saves its full config and logs to `outputs/<date>/<time>/`. This means you can always reproduce exactly what settings produced a given result.
 
 ## Project Layout
-
 ```
 CSE488-Project-Cell-Tracking/
 ├── README.md
-├── pyproject.toml
-├── environment.yml
+├── pyproject.toml          <- package metadata and dependencies
+├── environment.yml         <- conda environment
+├── conf/                   <- Hydra configuration files
+│   ├── config.yaml         <- top-level defaults
+│   ├── dataset/            <- one file per dataset
+│   ├── model/              <- one file per model variant
+│   ├── train/              <- training hyperparameters
+│   └── eval/               <- evaluation settings
 ├── scripts/
-│   ├── setup_data.py
-│   ├── train_svm.py
-│   └── eval_seg.py
+│   ├── setup_data.py       <- download datasets + evaluation tools
+│   ├── train_svm.py        <- train the SVM baseline
+│   └── eval_seg.py         <- run predictions and evaluate
 ├── src/cell_tracking/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── data.py
-│   ├── evaluation.py
-│   ├── features.py
-│   └── models/svm.py
-├── notebooks/
-│   └── 00_reference_colab.ipynb
+│   ├── config.py           <- paths and URLs
+│   ├── data.py             <- download helpers
+│   ├── evaluation.py       <- IoU computation + Jaccard evaluator
+│   ├── features.py         <- sliding-window feature extraction
+│   ├── models/
+│   │   └── svm.py          <- SVM train/predict/save/load
+│   └── cli.py              <- optional Typer CLI (same commands as scripts/)
+├── .github/
+│   └── copilot-instructions.md  <- Copilot context for this project
 └── tests/
-    └── test_features.py
+    └── test_features.py    <- tests for the feature extraction module
 ```
 
-## Quickstart
+## Environment Variables
+| Variable | Default | Description |
+|---|---|---|
+| `CELL_TRACKING_BASE` | `<repo>/artifacts` | Root folder for datasets, models, and results |
+| `CELL_TRACKING_DATASETS` | same as above | Optional override for the dataset cache |
 
-```bash
-# 1. Create environment
-conda env create -f environment.yml
-conda activate cse488-cell-tracking
-
-# 2. Install repo in editable mode
-pip install -e .
-
-# 3. Download tools + datasets
-python scripts/setup_data.py --dataset Fluo-N2DH-GOWT1 --splits training test
-
-# 4. Train a toy SVM baseline
-python scripts/train_svm.py --dataset Fluo-N2DH-GOWT1 --track 01 \
-    --window 5 --samples 500 --model-path artifacts/models/svm_rbf.pkl
-
-# 5. Evaluate with IoU + SEGMeasure
-python scripts/eval_seg.py --gt artifacts/datasets/Fluo-N2DH-GOWT1/training/01_ST/SEG \
-    --pred artifacts/results/Fluo-N2DH-GOWT1/01 --model-path artifacts/models/svm_rbf.pkl
-```
-
-Key environment variables:
-
-- `CELL_TRACKING_BASE`: Root folder for datasets/results (defaults to `<repo>/artifacts`).
-- `CELL_TRACKING_DATASETS`: Optional override for dataset cache.
-
-## Notebooks
-
-`notebooks/00_reference_colab.ipynb` mirrors the original Colab walkthrough but imports utilities from `src/cell_tracking`. Feel free to add exploratory notebooks; keep production code in `src/` and automation in `scripts/`.
-
-## Next Steps for Students
-
-1. Fork the repo (keep private) and invite John Femiani, Heather Merhout, and Siddhant Karki.
-2. Use issues/projects to plan segmentation/tracking experiments.
-3. Extend `scripts/` and `src/cell_tracking/` with custom methods (CNNs, trackers, etc.). For deep baselines, start with lightweight U-Nets from `segmentation_models_pytorch` (e.g., MobileNet or EfficientNet encoders) to keep training feasible.
-4. Publish qualitative results and videos via GitHub Pages (or similar) linked from your README.
-
-## Cloudflare Pages Showcase
-
-Each team must host a lightweight public page that summarizes results and embeds demo videos. This repo includes the template at `docs/index.md`; Cloudflare Pages can publish the folder with zero build steps.
-
-1. Edit `docs/index.md` (and any `/docs/assets/*` media) so it reflects your project. Preview locally with `python -m http.server 8000` and visit `http://localhost:8000/docs/`.
-2. Commit and push to `main` in your fork.
-3. Visit https://dash.cloudflare.com (create a free account if you do not already have one), then open **Workers & Pages → Create application → Pages → Connect to Git**. When prompted, authorize the Cloudflare Pages GitHub app for your fork.
-4. Select your repo/branch, set **Framework preset** to `None`, leave the build command empty, and set the **Build output directory** to `docs`. Save to trigger the first deploy; Cloudflare provides `https://<project>.pages.dev`.
-5. In your GitHub repo, go to **Settings → Pages** and set “Build and deployment” to **Disabled** so Cloudflare is the only publisher.
-6. Update the README badge/link to point at the Cloudflare URL and include that URL in your Canvas submission. For a custom hostname, add it under **Pages → Custom domains** and create the suggested CNAME in Cloudflare DNS.
-7. **Fallback option:** If Cloudflare Pages is unavailable, share the rendered `docs/index.md` directly by linking to the file in your private repo (grant graders read access) and ensure the README clearly states that temporary arrangement.
+## What You Need to Submit
+- A private GitHub repo containing your code, a working README with setup instructions, and an environment file.
+- A final PDF report (not a notebook). See the assignment instructions for required sections.
+- The repo URL and PDF submitted on Canvas.
 
 ## License
-
-MIT License – adjust to match your team preference if needed.
+MIT License

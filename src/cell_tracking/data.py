@@ -12,8 +12,6 @@ from tqdm import tqdm
 
 from .config import (
     DEFAULT_ARTIFACTS,
-    EVALUATION_ZIP_URL,
-    SEGMEASURE_FALLBACK_URL,
     TEST_DATASETS,
     TRAINING_DATASETS,
 )
@@ -41,36 +39,24 @@ def _download_file(url: str, destination: Path) -> None:
 
 
 def _extract_zip(source: Path, target: Path) -> None:
+    """Extract a zip file, flattening a single top-level folder if present.
+
+    Some zips (including the Cell Tracking Challenge datasets) wrap everything
+    in a folder with the same name as the zip, producing an extra level of
+    nesting. If the zip contains exactly one top-level directory and nothing
+    else, its contents are moved up so that directory disappears.
+    """
     target.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(source) as archive:
         archive.extractall(target)
 
-
-def ensure_evaluation_tools(base_dir: Path = DEFAULT_ARTIFACTS) -> Path:
-    """Download the Challenge evaluation binaries if missing."""
-
-    tools_dir = base_dir / "tools"
-    segmeasure_binary = tools_dir / "Linux" / "SEGMeasure"
-    if segmeasure_binary.exists():
-        return tools_dir
-
-    zip_path = tools_dir / "EvaluationSoftware.zip"
-    if not zip_path.exists():
-        _download_file(EVALUATION_ZIP_URL, zip_path)
-    _extract_zip(zip_path, tools_dir)
-    if segmeasure_binary.exists():
-        segmeasure_binary.chmod(0o755)
-    return tools_dir
-
-
-def ensure_segmeasure_script(base_dir: Path = DEFAULT_ARTIFACTS) -> Path:
-    """Download the MySEGMeasure helper script."""
-
-    script_path = base_dir / "tools" / "MySEGMeasure.py"
-    if not script_path.exists():
-        _download_file(SEGMEASURE_FALLBACK_URL, script_path)
-    return script_path
-
+    # Check for single top-level folder and flatten if found
+    contents = list(target.iterdir())
+    if len(contents) == 1 and contents[0].is_dir():
+        nested = contents[0]
+        for item in nested.iterdir():
+            shutil.move(str(item), str(target / item.name))
+        nested.rmdir()
 
 def ensure_dataset(name: str, split: str = "training", base_dir: Path = DEFAULT_ARTIFACTS) -> Path:
     """Ensure that a dataset split is downloaded and extracted."""
@@ -99,8 +85,6 @@ def ensure_dataset(name: str, split: str = "training", base_dir: Path = DEFAULT_
 def ensure_all(name: str, splits: Optional[Iterable[str]] = None) -> None:
     """Download evaluation tools plus the requested dataset splits."""
 
-    ensure_evaluation_tools()
-    ensure_segmeasure_script()
     splits = splits or ("training", "test")
     for split in splits:
         ensure_dataset(name, split)

@@ -1,0 +1,4 @@
+# @package _global_
+model:
+  kernel: linear
+  path: artifacts/models/svm_linear.pkl
